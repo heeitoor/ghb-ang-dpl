@@ -1,0 +1,103 @@
+name: Deploy To S3
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  # EnvironmentInfo:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [20.x]
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - run: |
+  #       echo "triggered by ${{ github.event_name }}"
+  #       echo "running on ${{ runner.os }}"
+  #       echo "repo name ${{ github.repository }}"
+  #       echo "branch name ${{ github.ref }}"
+  #       echo "branch name ${{ github.ref_name }}"
+  #       echo "branch name ${{ github.sha }}"
+  Build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Build Env
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Build
+      run: |
+        npm ci
+        npm run build
+    - name: Setup Version Info
+      shell: pwsh
+      working-directory: ./dist/new-proj
+      run: |
+        $short_sha=$(git rev-parse --short ${{ github.sha }})
+        $dist_hash=ls ./main*.js | awk -F'[.]' '{print $2}'
+        $branch_name="${{ github.ref_name }}"
+        "{ `"hash`": `"$dist_hash`", `"commit`": `"$short_sha`", `"commitLong`": `"${{ github.sha }}`", `"branch`": `"${{ github.ref_name }}`"}" | Out-File ./version.json
+        (Get-Content -path ./index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';window.ts_branch_name='$branch_name';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./index.html 
+    - name: Zip Deployable Package
+      shell: pwsh
+      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
+    - uses: actions/upload-artifact@v4
+      with:
+        name: deployable-package
+        path: ./deployable-package.zip 
+  Tests:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          node-version: [20.x]
+      steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      # - run: npm run test
+  Deploy:
+    needs: [Build, Tests]
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: deployable-package
+    - name: Unzip Deployable Package
+      shell: pwsh
+      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+    - name: Deploy to S3
+      shell: bash
+      working-directory: ./deployable-package/new-proj
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+        AWS_DEFAULT_REGION: us-east-1
+        AWS_DEFAULT_OUTPUT: json
+      run: |
+        ls
+        echo ${{ github.ref_name }}
+        aws s3 cp ./ s3://termsheet-s3-poc --recursive --metadata '{ "gh-tag-name": "${{ github.ref_name }}" }'
+  Healthcheck:
+    needs: [Deploy]    
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check Commit in index.html and version.json files
+      shell: pwsh
+      run: |
+        $short_sha=$(git rev-parse --short ${{ github.sha }})
+        if (!(Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/index.html).Content.Contains($short_sha)) { throw "Failed: index.html file was not deployed correctly." } 
+        if (!(Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/version.json).Content.Contains($short_sha)) { throw "Failed: version.json file was not deployed correctly." } 
+        echo "Application was deployed successfully"
