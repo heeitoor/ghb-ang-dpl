@@ -24,11 +24,11 @@ jobs:
           restore-keys: npm-${{ hashFiles('package-lock.json') }}
       - run: npm i
       - run: npm i -g @angular/cli
-     - name: Lint
-       run: ng lint
-       continue-on-error: true
-     - name: Test
-       run: npm test -- --watch=false --browsers=ChromeHeadless
+#      - name: Lint
+#        run: ng lint
+#        continue-on-error: true
+#      - name: Test
+#        run: npm test -- --watch=false --browsers=ChromeHeadless
       - name: Build
         run: ng build --prod
       - run: ls ./dist
@@ -40,4 +40,4 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           AWS_DEFAULT_OUTPUT: json
         run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
-
+      #- run: echo "${{ secrets.DPL_KID }}"
