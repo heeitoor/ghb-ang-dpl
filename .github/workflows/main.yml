@@ -9,6 +9,7 @@ jobs:
       - run: echo "repo name ${{ github.repository }}"
       - run: echo "branch name ${{ github.ref }}"
   CheckoutSetup:
+    needs: EnvironmentInfo
     runs-on: ubuntu-latest
     steps:
       - run: echo "triggered by ${{ github.event_name }}"
