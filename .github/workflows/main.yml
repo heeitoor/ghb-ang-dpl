@@ -12,39 +12,32 @@ jobs:
     needs: EnvironmentInfo
     runs-on: ubuntu-latest
     steps:
-      - run: echo "triggered by ${{ github.event_name }}"
-      - run: echo "running on ${{ runner.os }}"
-      - run: echo "repo name ${{ github.repository }}"
-      - run: echo "branch name ${{ github.ref }}"
-    # needs: EnvironmentInfo
-    # runs-on: ubuntu-latest
-    # steps:
-    #   - uses: actions/checkout@v2
-    #   - uses: actions/setup-node@v2
-    #     with:
-    #       node-version: "14"      
-    #   - name: Cache dependencies
-    #     uses: actions/cache@v2
-    #     with:
-    #       path: ~/.npm
-    #       key: npm-${{ hashFiles('package-lock.json') }}
-    #       restore-keys: npm-${{ hashFiles('package-lock.json') }}
-    #   - run: npm i
-    #   - run: npm i -g @angular/cli
-    #  - name: Lint
-    #    run: ng lint
-    #    continue-on-error: true
-    #  - name: Test
-    #    run: npm test -- --watch=false --browsers=ChromeHeadless
-    #   - name: Build
-    #     run: ng build --prod
-    #   - run: ls ./dist
-    #   - run: ls ./dist/angular-project
-    #   - name: Deploy
-    #     env:
-    #       AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-    #       AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-    #       AWS_DEFAULT_REGION: us-east-1
-    #       AWS_DEFAULT_OUTPUT: json
-    #     run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"      
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-${{ hashFiles('package-lock.json') }}
+      - run: npm i
+      - run: npm i -g @angular/cli
+     - name: Lint
+       run: ng lint
+       continue-on-error: true
+     - name: Test
+       run: npm test -- --watch=false --browsers=ChromeHeadless
+      - name: Build
+        run: ng build --prod
+      - run: ls ./dist
+      - run: ls ./dist/angular-project
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_DEFAULT_OUTPUT: json
+        run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
 
