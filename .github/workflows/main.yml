@@ -1,4 +1,4 @@
-name: Lint - Test - Build - Deploy - Angular Project
+name: Lint - Test - Build - Deploy - Angular Project - v2
 on: [push]
 jobs:
   EnvironmentInfo:
