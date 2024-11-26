@@ -15,7 +15,7 @@ jobs:
       matrix:
         node-version: [20.x]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: |
         echo "triggered by ${{ github.event_name }}"
         echo "running on ${{ runner.os }}"
