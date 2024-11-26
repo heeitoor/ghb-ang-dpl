@@ -42,7 +42,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: deployable-artifact
-        path: ./deployable-package # or path/to/artifact/**/*.js
+        path: ./deployable-package.zip # or path/to/artifact/**/*.js
       
   Deploy:
     needs: Build
@@ -51,7 +51,7 @@ jobs:
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
       with:
-        path: deployable-package
+        name: deployable-package
   #   - run: ls deployable-artifact
     - run: ls
     - name: Unzip Deployable Package
