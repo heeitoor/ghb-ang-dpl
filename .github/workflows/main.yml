@@ -71,12 +71,12 @@ jobs:
     - name: Unzip Deployable Package
       shell: pwsh
       run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
-    - run: ls ./deployable-package
-    - run: ls ./deployable-package/new-proj
-    - run: cd deployable-package
+    # - run: ls ./deployable-package
+    - run: cd ./deployable-package/new-proj
+    # - run: cd deployable-package
     - run: ls 
-    - run: cd new-proj
-    - run: ls 
+    # - run: cd new-proj
+    # - run: ls 
   #   - run: cd deployable-artifact
   #   - run: ls
   #   - run: cd deployable-artifact
