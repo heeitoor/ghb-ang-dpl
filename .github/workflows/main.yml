@@ -36,8 +36,8 @@ jobs:
     - run: npm run build--if-present
     - uses: actions/upload-artifact@v4
       with:
-      name: dist
-      path: ./dist/new-proj # or path/to/artifact/**/*.js
+        name: dist
+        path: ./dist/new-proj # or path/to/artifact/**/*.js
       
   Deploy:
     needs: Build
