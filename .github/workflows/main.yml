@@ -48,7 +48,9 @@ jobs:
       shell: pwsh
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
-        $dist_hash=`ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'`
+        $dist_hash=ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'
+        $short_sha
+        $dist_hash
         (Get-Content -path ./dist/new-proj/index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./dist/new-proj/index.html 
         cat ./dist/new-proj/index.html
       #run: sed -i "" -e "s|html\>|bubu\>|g" ./dist/new-proj/index.html
