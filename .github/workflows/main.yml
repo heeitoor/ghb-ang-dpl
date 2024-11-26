@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Deploy To S3
 
 on:
@@ -23,35 +20,32 @@ jobs:
         echo "branch name ${{ github.ref }}"
         echo "branch name ${{ github.ref_name }}"
         echo "branch name ${{ github.sha }}"
+  Build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build
+    - run: |
         short_sha=$(git rev-parse --short ${{ github.sha }})
         echo "{ \"hash\": \"$hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
         cat ./version.json
-
-
-  # hash=`ls dist/treo/main*.js | awk -F'[.]' '{print $2}'`
-  # Build:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [20.x]
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Use Node.js ${{ matrix.node-version }}
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: ${{ matrix.node-version }}
-  #       cache: 'npm'
-  #   - run: npm ci
-  #   - run: npm run build
-  #   - run: ls ./dist
-  #   - run: ls ./dist/new-proj
-  #   - name: Zip Deployable Package
-  #     shell: pwsh
-  #     run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
-  #   - uses: actions/upload-artifact@v4
-  #     with:
-  #       name: deployable-package
-  #       path: ./deployable-package.zip 
+        mv ./version.json ./dist/new-proj
+    - name: Zip Deployable Package
+      shell: pwsh
+      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
+    - uses: actions/upload-artifact@v4
+      with:
+        name: deployable-package
+        path: ./deployable-package.zip 
   # Tests:
   #     runs-on: ubuntu-latest
   #     strategy:
@@ -66,32 +60,29 @@ jobs:
   #         cache: 'npm'
   #     - run: npm ci
   #     # - run: npm run test
-  # Deploy:
-  #   needs: [Build, Tests]
-  #   runs-on: ubuntu-latest
-  #   # environment: Production
-  #   steps:
-  #   - name: Download All Artifacts
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: deployable-package
-  # #   - run: ls deployable-artifact
-  #   # - run: ls
-  #   - name: Unzip Deployable Package
-  #     shell: pwsh
-  #     run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
-  #   # - run: ls ./deployable-package
-  #   - name: Deploy to S3
-  #     shell: bash
-  #     working-directory: ./deployable-package/new-proj
-  #     env:
-  #       AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-  #       AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-  #       AWS_DEFAULT_REGION: us-east-1
-  #       AWS_DEFAULT_OUTPUT: json
-  #     run: |
-  #       ls
-  #       aws s3 cp ./ s3://termsheet-s3-poc --recursive
+  Deploy:
+    needs: [Build]
+    runs-on: ubuntu-latest
+    # environment: Production
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: deployable-package
+    - name: Unzip Deployable Package
+      shell: pwsh
+      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+    - name: Deploy to S3
+      shell: bash
+      working-directory: ./deployable-package/new-proj
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+        AWS_DEFAULT_REGION: us-east-1
+        AWS_DEFAULT_OUTPUT: json
+      run: |
+        ls
+        aws s3 cp ./ s3://termsheet-s3-poc --recursive
   # HealthCheck:
   #   needs: [Build]
   #   runs-on: ubuntu-latest
