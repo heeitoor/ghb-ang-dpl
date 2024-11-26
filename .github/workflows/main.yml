@@ -1,13 +1,13 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Node.js CI
+name: Deploy To S3
 
 on:
   push:
     branches: [ "new-proj" ]
-  # pull_request:
-  #   branches: [ "main" ]
+  tags:
+      - '*'
 
 jobs:
   EnvironmentInfo:
@@ -23,7 +23,8 @@ jobs:
         echo "branch name ${{ github.ref }}"
         echo "branch name ${{ github.ref_name }}"
         echo "branch name ${{ github.sha }}"
-        echo "{ \"hash\": \"$hash\", \"commit\": \"$git_commit_short\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"$git_branch\"}" > ./version.json
+        short_sha=$(git rev-parse --short ${{ github.sha }})
+        echo "{ \"hash\": \"$hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
         cat ./version.json
 
 
