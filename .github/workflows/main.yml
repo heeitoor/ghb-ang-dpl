@@ -41,7 +41,7 @@ jobs:
       run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
     - uses: actions/upload-artifact@v4
       with:
-        name: deployable-artifact
+        name: deployable-package
         path: ./deployable-package.zip # or path/to/artifact/**/*.js
       
   Deploy:
@@ -56,7 +56,7 @@ jobs:
     - run: ls
     - name: Unzip Deployable Package
       shell: pwsh
-      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-artifact
+      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
     - run: ls
   #   - run: cd deployable-artifact
   #   - run: ls
