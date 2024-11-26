@@ -36,7 +36,7 @@ jobs:
     - run: npm run build
     - run: |
         short_sha=$(git rev-parse --short ${{ github.sha }})
-        dist_hash=`ls main*.js | awk -F'[.]' '{print $2}'`
+        dist_hash=`ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'`
         echo "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
         cat ./version.json
         mv ./version.json ./dist/new-proj
