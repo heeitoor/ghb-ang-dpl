@@ -36,7 +36,7 @@ jobs:
     - run: npm run build
     - uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: deployable-artifact
         path: ./dist/new-proj # or path/to/artifact/**/*.js
       
   Deploy:
@@ -46,11 +46,12 @@ jobs:
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
       with:
-        path: dist
+        path: deployable-artifact
+    - run: ls deployable-artifact
+    - run: ls
+    - run: cd deployable-artifact
+    - run: ls
     - run: ls dist
-    - run: ls
-    - run: cd dist
-    - run: ls
   #   runs-on: ubuntu-latest
   #   strategy:
   #     matrix:
