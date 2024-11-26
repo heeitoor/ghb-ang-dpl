@@ -36,7 +36,7 @@ jobs:
     - run: npm run build
     - name: Transform
       shell: bash
-    - run: |
+      run: |
         short_sha=$(git rev-parse --short ${{ github.sha }})
         dist_hash=`ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $3}'`
         echo "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
