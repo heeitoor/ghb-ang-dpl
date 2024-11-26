@@ -21,10 +21,9 @@ jobs:
         echo "running on ${{ runner.os }}"
         echo "repo name ${{ github.repository }}"
         echo "branch name ${{ github.ref }}"
-        git_commit_short=`git rev-parse --short HEAD`
-        git_commit_long=`git rev-parse HEAD`
-        git_branch=`git branch --show-current`
-        echo "{ \"hash\": \"$hash\", \"commit\": \"$git_commit_short\", \"commitLong\": \"$git_commit_long\", \"branch\": \"$git_branch\"}" > ./version.json
+        echo "branch name ${{ github.ref_name }}"
+        echo "branch name ${{ github.sha }}"
+        echo "{ \"hash\": \"$hash\", \"commit\": \"$git_commit_short\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"$git_branch\"}" > ./version.json
         cat ./version.json
 
 
