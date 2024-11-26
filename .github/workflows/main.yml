@@ -67,7 +67,6 @@ jobs:
       with:
         name: deployable-package
   #   - run: ls deployable-artifact
-    - run: ls
     - name: Unzip Deployable Package
       shell: pwsh
       - run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./
