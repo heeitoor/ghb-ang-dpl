@@ -10,8 +10,3 @@ if (environment.production) {
 
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
-
-// console.log("lala");
-
-
-//git add . && git commit -m "setup" --amend --no-edit && git push --force origin setup

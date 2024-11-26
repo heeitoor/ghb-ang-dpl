@@ -1,43 +1,119 @@
-name: Lint - Test - Build - Deploy - Angular Project
-on: [push]
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "s3-deployment-poc" ]
+  # pull_request:
+  #   branches: [ "main" ]
+
 jobs:
   EnvironmentInfo:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
     steps:
       - run: echo "triggered by ${{ github.event_name }}"
       - run: echo "running on ${{ runner.os }}"
       - run: echo "repo name ${{ github.repository }}"
       - run: echo "branch name ${{ github.ref }}"
-  CheckoutSetup:
-    needs: EnvironmentInfo
+  Build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run build--if-present
+    - uses: actions/upload-artifact@v4
+      with:
+      name: dist
+      path: ./dist/new-proj # or path/to/artifact/**/*.js
+      
+  Deploy:
+    needs: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "14"      
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-${{ hashFiles('package-lock.json') }}
-      - run: npm i
-      - run: npm i -g @angular/cli
-#      - name: Lint
-#        run: ng lint
-#        continue-on-error: true
-#      - name: Test
-#        run: npm test -- --watch=false --browsers=ChromeHeadless
-      - name: Build
-        run: ng build --prod
-      - run: ls ./dist
-      - run: ls ./dist/angular-project
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-          AWS_DEFAULT_REGION: us-east-1
-          AWS_DEFAULT_OUTPUT: json
-        run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
-      #- run: echo "${{ secrets.DPL_KID }}"
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+    - run: ls dist
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [20.x]
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Use Node.js ${{ matrix.node-version }}
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: ${{ matrix.node-version }}
+  #       cache: 'npm'
+  #   #   env:
+  #   #     GIT_COMMIT_SHORT: git rev-parse --short HEAD
+  #   #     GIT_COMMIT_LONG: git rev-parse HEAD
+  #   # - run: echo "$(GIT_COMMIT_SHORT)"
+  #   - run: npm ci
+  #   - run: npm run build--if-present
+  # # - name: Deploy
+  # #   env:
+  # #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KID }}
+  # #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KS }}
+  # #     AWS_DEFAULT_REGION: us-east-1
+  # #     AWS_DEFAULT_OUTPUT: json
+  # #   run: aws s3 cp ./dist/treo s3://termsheet-s3-poc --recursive
+
+
+# name: Lint - Test - Build - Deploy - Angular Project
+# on: [push]
+# jobs:
+#   EnvironmentInfo:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "triggered by ${{ github.event_name }}"
+#       - run: echo "running on ${{ runner.os }}"
+#       - run: echo "repo name ${{ github.repository }}"
+#       - run: echo "branch name ${{ github.ref }}"
+#   CheckoutSetup:
+#     needs: EnvironmentInfo
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: actions/setup-node@v2
+#         with:
+#           node-version: "14"      
+#       - name: Cache dependencies
+#         uses: actions/cache@v2
+#         with:
+#           path: ~/.npm
+#           key: npm-${{ hashFiles('package-lock.json') }}
+#           restore-keys: npm-${{ hashFiles('package-lock.json') }}
+#       - run: npm i
+#       - run: npm i -g @angular/cli
+# #      - name: Lint
+# #        run: ng lint
+# #        continue-on-error: true
+# #      - name: Test
+# #        run: npm test -- --watch=false --browsers=ChromeHeadless
+#       - name: Build
+#         run: ng build --prod
+#       - run: ls ./dist
+#       - run: ls ./dist/angular-project
+#       - name: Deploy
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+#           AWS_DEFAULT_REGION: us-east-1
+#           AWS_DEFAULT_OUTPUT: json
+#         run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
+#       #- run: echo "${{ secrets.DPL_KID }}"
