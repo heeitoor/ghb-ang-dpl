@@ -48,6 +48,7 @@ jobs:
       with:
         path: dist
     - run: ls dist
+    - run: ls
   #   runs-on: ubuntu-latest
   #   strategy:
   #     matrix:
