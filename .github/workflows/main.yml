@@ -82,7 +82,7 @@ jobs:
         AWS_DEFAULT_OUTPUT: json
       run: |
         ls
-        aws s3 cp ./dist/treo s3://termsheet-s3-poc --recursive
+        aws s3 cp ./ s3://termsheet-s3-poc --recursive
     # - run: cd deployable-package
     # - run: ls 
     # - run: cd new-proj
