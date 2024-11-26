@@ -21,12 +21,14 @@ jobs:
         echo "running on ${{ runner.os }}"
         echo "repo name ${{ github.repository }}"
         echo "branch name ${{ github.ref }}"
-        hash=`ls dist/treo/main*.js | awk -F'[.]' '{print $2}'`
         git_commit_short=`git rev-parse --short HEAD`
         git_commit_long=`git rev-parse HEAD`
         git_branch=`git branch --show-current`
         echo "{ \"hash\": \"$hash\", \"commit\": \"$git_commit_short\", \"commitLong\": \"$git_commit_long\", \"branch\": \"$git_branch\"}" > ./version.json
         cat ./version.json
+
+
+  # hash=`ls dist/treo/main*.js | awk -F'[.]' '{print $2}'`
   # Build:
   #   runs-on: ubuntu-latest
   #   strategy:
