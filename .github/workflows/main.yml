@@ -36,11 +36,11 @@ jobs:
     - run: npm run build
     - run: |
         short_sha=$(git rev-parse --short ${{ github.sha }})
-        dist_hash=ls main*.js | awk -F'[.]' '{print $2}'
+        dist_hash=`ls main*.js | awk -F'[.]' '{print $2}'`
         echo "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
         cat ./version.json
         mv ./version.json ./dist/new-proj
-        sed -i '' 's/\<\/html\>/\<script\>window.ts_hash_version="'"$dist_hash"'";window.ts_hash_version="'"$short_sha"'";\<\/script\>\n\<\/html\>/g' ./dist/new-proj/index.html
+      #sed -i '' 's/\<\/html\>/\<script\>window.ts_hash_version="'"$dist_hash"'";window.ts_hash_version="'"$short_sha"'";\<\/script\>\n\<\/html\>/g' ./dist/new-proj/index.html
     - name: Zip Deployable Package
       shell: pwsh
       run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
