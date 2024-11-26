@@ -43,10 +43,24 @@ jobs:
       with:
         name: deployable-package
         path: ./deployable-package.zip # or path/to/artifact/**/*.js
-      
+  Tests:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          node-version: [20.x]
+      steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test
   Deploy:
-    needs: Build
+    needs: [Build, Tests]
     runs-on: ubuntu-latest
+    environment: Production
     steps:
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
@@ -57,6 +71,7 @@ jobs:
     - name: Unzip Deployable Package
       shell: pwsh
       run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+    - run: cd deployable-package
     - run: ls
   #   - run: cd deployable-artifact
   #   - run: ls
