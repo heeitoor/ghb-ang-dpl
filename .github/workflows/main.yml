@@ -72,11 +72,17 @@ jobs:
       shell: pwsh
       run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
     # - run: ls ./deployable-package
-    - name:
+    - name: Deploy to S3
       shell: bash
       working-directory: ./deployable-package/new-proj
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KS }}
+        AWS_DEFAULT_REGION: us-east-1
+        AWS_DEFAULT_OUTPUT: json
       run: |
         ls
+        aws s3 cp ./dist/treo s3://termsheet-s3-poc --recursive
     # - run: cd deployable-package
     # - run: ls 
     # - run: cd new-proj
