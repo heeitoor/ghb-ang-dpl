@@ -70,9 +70,9 @@ jobs:
     - run: ls
     - name: Unzip Deployable Package
       shell: pwsh
-      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./
-      run: cd ./new-proj
-      run: ls
+      - run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./
+      - run: cd ./new-proj
+      - run: ls
   #   - run: cd deployable-artifact
   #   - run: ls
   #   - run: cd deployable-artifact
