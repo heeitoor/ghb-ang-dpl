@@ -16,73 +16,85 @@ jobs:
       matrix:
         node-version: [20.x]
     steps:
-      - run: echo "triggered by ${{ github.event_name }}"
-      - run: echo "running on ${{ runner.os }}"
-      - run: echo "repo name ${{ github.repository }}"
-      - run: echo "branch name ${{ github.ref }}"
-  Build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build
-    - run: ls ./dist
-    - run: ls ./dist/new-proj
-    - name: Zip Deployable Package
-      shell: pwsh
-      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
-    - uses: actions/upload-artifact@v4
-      with:
-        name: deployable-package
-        path: ./deployable-package.zip # or path/to/artifact/**/*.js
-  Tests:
-      runs-on: ubuntu-latest
-      strategy:
-        matrix:
-          node-version: [20.x]
-      steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      # - run: npm run test
-  Deploy:
-    needs: [Build, Tests]
-    runs-on: ubuntu-latest
-    # environment: Production
-    steps:
-    - name: Download All Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: deployable-package
-  #   - run: ls deployable-artifact
-    # - run: ls
-    - name: Unzip Deployable Package
-      shell: pwsh
-      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
-    # - run: ls ./deployable-package
-    - name: Deploy to S3
-      shell: bash
-      working-directory: ./deployable-package/new-proj
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-        AWS_DEFAULT_REGION: us-east-1
-        AWS_DEFAULT_OUTPUT: json
-      run: |
-        ls
-        aws s3 cp ./ s3://termsheet-s3-poc --recursive
+      - run: |
+        echo "triggered by ${{ github.event_name }}"
+        echo "running on ${{ runner.os }}"
+        echo "repo name ${{ github.repository }}"
+        echo "branch name ${{ github.ref }}"
+        hash=`ls dist/treo/main*.js | awk -F'[.]' '{print $2}'`
+        git_commit_short=`git rev-parse --short HEAD`
+        git_commit_long=`git rev-parse HEAD`
+        git_branch=`git branch --show-current`
+        echo "{ \"hash\": \"$hash\", \"commit\": \"$git_commit_short\", \"commitLong\": \"$git_commit_long\", \"branch\": \"$git_branch\"}" > ./version.json
+        cat ./version.json
+  # Build:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [20.x]
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Use Node.js ${{ matrix.node-version }}
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: ${{ matrix.node-version }}
+  #       cache: 'npm'
+  #   - run: npm ci
+  #   - run: npm run build
+  #   - run: ls ./dist
+  #   - run: ls ./dist/new-proj
+  #   - name: Zip Deployable Package
+  #     shell: pwsh
+  #     run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
+  #   - uses: actions/upload-artifact@v4
+  #     with:
+  #       name: deployable-package
+  #       path: ./deployable-package.zip 
+  # Tests:
+  #     runs-on: ubuntu-latest
+  #     strategy:
+  #       matrix:
+  #         node-version: [20.x]
+  #     steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #         cache: 'npm'
+  #     - run: npm ci
+  #     # - run: npm run test
+  # Deploy:
+  #   needs: [Build, Tests]
+  #   runs-on: ubuntu-latest
+  #   # environment: Production
+  #   steps:
+  #   - name: Download All Artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: deployable-package
+  # #   - run: ls deployable-artifact
+  #   # - run: ls
+  #   - name: Unzip Deployable Package
+  #     shell: pwsh
+  #     run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+  #   # - run: ls ./deployable-package
+  #   - name: Deploy to S3
+  #     shell: bash
+  #     working-directory: ./deployable-package/new-proj
+  #     env:
+  #       AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+  #       AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+  #       AWS_DEFAULT_REGION: us-east-1
+  #       AWS_DEFAULT_OUTPUT: json
+  #     run: |
+  #       ls
+  #       aws s3 cp ./ s3://termsheet-s3-poc --recursive
+  # HealthCheck:
+  #   needs: [Build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+
     # - run: cd deployable-package
     # - run: ls 
     # - run: cd new-proj
