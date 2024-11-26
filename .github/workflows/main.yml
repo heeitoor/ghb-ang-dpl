@@ -5,7 +5,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "s3-deployment-poc" ]
+    branches: [ "new-proj" ]
   # pull_request:
   #   branches: [ "main" ]
 
