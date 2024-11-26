@@ -60,7 +60,7 @@ jobs:
   Deploy:
     needs: [Build, Tests]
     runs-on: ubuntu-latest
-    environment: Production
+    # environment: Production
     steps:
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
@@ -71,8 +71,14 @@ jobs:
     - name: Unzip Deployable Package
       shell: pwsh
       run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+    - run: ls ./deployable-package
+    - run: ls ./
+    - run: ls
     - run: cd deployable-package
     - run: ls
+    - run: cd deployable-package
+    - run: ls
+    - run: ls deployable-package
   #   - run: cd deployable-artifact
   #   - run: ls
   #   - run: cd deployable-artifact
