@@ -44,7 +44,7 @@ jobs:
         mv ./version.json ./dist/new-proj
         ls ./dist/new-proj
         cat ./dist/new-proj/index.html
-        sed -i "" "s/html\>/bubu\>/g" ./dist/new-proj/index.html
+      - run: sed -i "" "s/html/nothtml/g" ./dist/new-proj/index.html
       #sed -i "" "s/\<\/html\>/\<script\>window.ts_hash_version="'"$dist_hash"'";window.ts_commit="'"$short_sha"'";\<\/script\>\n\<\/html\>/g" ./dist/new-proj/index.html
     - name: Zip Deployable Package
       shell: pwsh
