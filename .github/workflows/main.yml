@@ -34,6 +34,8 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
+    - name: Transform
+      shell: bash
     - run: |
         short_sha=$(git rev-parse --short ${{ github.sha }})
         dist_hash=`ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $3}'`
