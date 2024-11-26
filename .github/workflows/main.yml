@@ -74,8 +74,8 @@ jobs:
     # - run: ls ./deployable-package
     - name:
       shell: bash
+      working-directory: ./deployable-package/new-proj
       run: |
-        cd ./deployable-package/new-proj
         ls
     # - run: cd deployable-package
     # - run: ls 
