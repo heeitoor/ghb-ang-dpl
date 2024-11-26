@@ -36,21 +36,28 @@ jobs:
     - run: npm run build
     - run: ls ./dist
     - run: ls ./dist/new-proj
+    - name: Zip Deployable Package
+      shell: pwsh
+      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
     - uses: actions/upload-artifact@v4
       with:
         name: deployable-artifact
-        path: ./dist/new-proj # or path/to/artifact/**/*.js
+        path: ./deployable-package # or path/to/artifact/**/*.js
       
-  # Deploy:
-  #   needs: Build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Download All Artifacts
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       path: deployable-artifact
+  Deploy:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: deployable-package
   #   - run: ls deployable-artifact
-  #   - run: ls
+    - run: ls
+    - name: Unzip Deployable Package
+      shell: pwsh
+      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-artifact
+    - run: ls
   #   - run: cd deployable-artifact
   #   - run: ls
   #   - run: cd deployable-artifact
