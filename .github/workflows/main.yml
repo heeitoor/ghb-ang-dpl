@@ -8,13 +8,14 @@ on:
 jobs:
   Job1:
     runs-on: ubuntu-latest
-    run: |
-      echo "HELLO=WORLD" >> "$GITHUB_OUTPUT"
+    steps:
+      - run: |
+        echo "HELLO=WORLD" >> "$GITHUB_OUTPUT"
     
   Job2:
     runs-on: ubuntu-latest
-    run: |
-      echo "${{ needs.one.outputs.HELLO }}"
+      - run: |
+        echo "${{ needs.one.outputs.HELLO }}"
 
 
   # EnvironmentInfo:
