@@ -94,8 +94,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Check Commit in Version File
+    - name: Check Commit in index.html and version.json files
       shell: pwsh
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
-        if ((Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/index.html).Content.Contains($short_sha)) { echo "Application was deployed successfully" } else { throw "Application was not successfully deployed." } 
+        if (!(Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/index.html).Content.Contains($short_sha)) { throw "Failed: index.html file was not deployed correctly." } 
+        if (!(Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/version.json).Content.Contains($short_sha)) { throw "Failed: version.json file was not deployed correctly." } 
+        echo "Application was deployed successfully"
