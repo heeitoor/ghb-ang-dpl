@@ -19,4 +19,8 @@ export class AppComponent {
     ] as any;
     this.ts_commit = (document.defaultView as any)['ts_commit'] as any;
   }
+
+  throwError(): void {
+    throw new Error('This is a test error');
+  }
 }
