@@ -97,4 +97,4 @@ jobs:
       shell: pwsh
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
-        if ((Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/index.html).Content.Contains("sdfdsf")) { echo "Application was deployed successfully" } else { throw "Application was not successfully deployed." } 
+        if ((Invoke-WebRequest https://dfd6mqd5sacqd.cloudfront.net/index.html).Content.Contains($short_sha)) { echo "Application was deployed successfully" } else { throw "Application was not successfully deployed." } 
