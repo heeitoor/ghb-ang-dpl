@@ -36,15 +36,17 @@ jobs:
     - run: npm run build
     - name: Transform
       shell: pwsh
+      working-directory: ./dist/new-proj
       run: |
+        ls
         $short_sha=$(git rev-parse --short ${{ github.sha }})
-        $dist_hash=ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'
-        "{ `"hash`": `"$dist_hash`", `"commit`": `"$short_sha`", `"commitLong`": `"${{ github.sha }}`", `"branch`": `"${{ github.ref_name }}`"}" | Out-File ./dist/new-proj/version.json
-        cat ./dist/new-proj/version.json
-        ls ./dist/new-proj
-        cat ./dist/new-proj/index.html
-        (Get-Content -path ./dist/new-proj/index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./dist/new-proj/index.html 
-        cat ./dist/new-proj/index.html
+        $dist_hash=ls ./main*.js | awk -F'[.]' '{print $2}'
+        "{ `"hash`": `"$dist_hash`", `"commit`": `"$short_sha`", `"commitLong`": `"${{ github.sha }}`", `"branch`": `"${{ github.ref_name }}`"}" | Out-File ./version.json
+        cat ./version.json
+        ls ./
+        cat ./index.html
+        (Get-Content -path ./index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./index.html 
+        cat ./index.html
     # - name: Zip Deployable Package
     #   shell: pwsh
     #   run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
