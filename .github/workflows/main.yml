@@ -6,20 +6,20 @@ on:
     tags: ['*']
 
 jobs:
-  EnvironmentInfo:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-    steps:
-    - uses: actions/checkout@v4
-    - run: |
-        echo "triggered by ${{ github.event_name }}"
-        echo "running on ${{ runner.os }}"
-        echo "repo name ${{ github.repository }}"
-        echo "branch name ${{ github.ref }}"
-        echo "branch name ${{ github.ref_name }}"
-        echo "branch name ${{ github.sha }}"
+  # EnvironmentInfo:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [20.x]
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - run: |
+  #       echo "triggered by ${{ github.event_name }}"
+  #       echo "running on ${{ runner.os }}"
+  #       echo "repo name ${{ github.repository }}"
+  #       echo "branch name ${{ github.ref }}"
+  #       echo "branch name ${{ github.ref_name }}"
+  #       echo "branch name ${{ github.sha }}"
   Build:
     runs-on: ubuntu-latest
     strategy:
@@ -35,33 +35,23 @@ jobs:
     - run: npm ci
     - run: npm run build
     - name: Transform
-      shell: bash
-      run: |
-        short_sha=$(git rev-parse --short ${{ github.sha }})
-        dist_hash=`ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $3}'`
-        echo "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ./version.json
-        cat ./version.json
-        mv ./version.json ./dist/new-proj
-        ls ./dist/new-proj
-        cat ./dist/new-proj/index.html
-    - name: SEEEED
       shell: pwsh
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
         $dist_hash=ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'
-        $short_sha
-        $dist_hash
+        "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" | Out-File ./dist/new-proj/version.json
+        cat ./dist/new-proj/version.json
+        ls ./dist/new-proj
+        cat ./dist/new-proj/index.html
         (Get-Content -path ./dist/new-proj/index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./dist/new-proj/index.html 
         cat ./dist/new-proj/index.html
-      #run: sed -i "" -e "s|html\>|bubu\>|g" ./dist/new-proj/index.html
-      #sed -i "" "s/\<\/html\>/\<script\>window.ts_hash_version="'"$dist_hash"'";window.ts_commit="'"$short_sha"'";\<\/script\>\n\<\/html\>/g" ./dist/new-proj/index.html
-    - name: Zip Deployable Package
-      shell: pwsh
-      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
-    - uses: actions/upload-artifact@v4
-      with:
-        name: deployable-package
-        path: ./deployable-package.zip 
+    # - name: Zip Deployable Package
+    #   shell: pwsh
+    #   run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
+    # - uses: actions/upload-artifact@v4
+    #   with:
+    #     name: deployable-package
+    #     path: ./deployable-package.zip 
   # Tests:
   #     runs-on: ubuntu-latest
   #     strategy:
@@ -76,108 +66,30 @@ jobs:
   #         cache: 'npm'
   #     - run: npm ci
   #     # - run: npm run test
-  Deploy:
-    needs: [Build]
-    runs-on: ubuntu-latest
-    # environment: Production
-    steps:
-    - name: Download All Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: deployable-package
-    - name: Unzip Deployable Package
-      shell: pwsh
-      run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
-    - name: Deploy to S3
-      shell: bash
-      working-directory: ./deployable-package/new-proj
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-        AWS_DEFAULT_REGION: us-east-1
-        AWS_DEFAULT_OUTPUT: json
-      run: |
-        ls
-        aws s3 cp ./ s3://termsheet-s3-poc --recursive
+  # Deploy:
+  #   needs: [Build]
+  #   runs-on: ubuntu-latest
+  #   # environment: Production
+  #   steps:
+  #   - name: Download All Artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: deployable-package
+  #   - name: Unzip Deployable Package
+  #     shell: pwsh
+  #     run: Expand-Archive -Path ./deployable-package.zip -DestinationPath ./deployable-package
+  #   - name: Deploy to S3
+  #     shell: bash
+  #     working-directory: ./deployable-package/new-proj
+  #     env:
+  #       AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
+  #       AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
+  #       AWS_DEFAULT_REGION: us-east-1
+  #       AWS_DEFAULT_OUTPUT: json
+  #     run: |
+  #       ls
+  #       aws s3 cp ./ s3://termsheet-s3-poc --recursive
   # HealthCheck:
   #   needs: [Build]
   #   runs-on: ubuntu-latest
   #   steps:
-
-    # - run: cd deployable-package
-    # - run: ls 
-    # - run: cd new-proj
-    # - run: ls 
-  #   - run: cd deployable-artifact
-  #   - run: ls
-  #   - run: cd deployable-artifact
-  #   - run: ls
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [20.x]
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Use Node.js ${{ matrix.node-version }}
-  #     uses: actions/setup-node@v4
-  #     with:
-  #       node-version: ${{ matrix.node-version }}
-  #       cache: 'npm'
-  #   #   env:
-  #   #     GIT_COMMIT_SHORT: git rev-parse --short HEAD
-  #   #     GIT_COMMIT_LONG: git rev-parse HEAD
-  #   # - run: echo "$(GIT_COMMIT_SHORT)"
-  #   - run: npm ci
-  #   - run: npm run build--if-present
-  # # - name: Deploy
-  # #   env:
-  # #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KID }}
-  # #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KS }}
-  # #     AWS_DEFAULT_REGION: us-east-1
-  # #     AWS_DEFAULT_OUTPUT: json
-  # #   run: aws s3 cp ./dist/treo s3://termsheet-s3-poc --recursive
-
-
-# name: Lint - Test - Build - Deploy - Angular Project
-# on: [push]
-# jobs:
-#   EnvironmentInfo:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - run: echo "triggered by ${{ github.event_name }}"
-#       - run: echo "running on ${{ runner.os }}"
-#       - run: echo "repo name ${{ github.repository }}"
-#       - run: echo "branch name ${{ github.ref }}"
-#   CheckoutSetup:
-#     needs: EnvironmentInfo
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: actions/setup-node@v2
-#         with:
-#           node-version: "14"      
-#       - name: Cache dependencies
-#         uses: actions/cache@v2
-#         with:
-#           path: ~/.npm
-#           key: npm-${{ hashFiles('package-lock.json') }}
-#           restore-keys: npm-${{ hashFiles('package-lock.json') }}
-#       - run: npm i
-#       - run: npm i -g @angular/cli
-# #      - name: Lint
-# #        run: ng lint
-# #        continue-on-error: true
-# #      - name: Test
-# #        run: npm test -- --watch=false --browsers=ChromeHeadless
-#       - name: Build
-#         run: ng build --prod
-#       - run: ls ./dist
-#       - run: ls ./dist/angular-project
-#       - name: Deploy
-#         env:
-#           AWS_ACCESS_KEY_ID: ${{ secrets.DPL_KID }}
-#           AWS_SECRET_ACCESS_KEY: ${{ secrets.DPL_KS }}
-#           AWS_DEFAULT_REGION: us-east-1
-#           AWS_DEFAULT_OUTPUT: json
-#         run: aws s3 cp ./dist/angular-project s3://ghb-ang-dpl --recursive
-#       #- run: echo "${{ secrets.DPL_KID }}"
