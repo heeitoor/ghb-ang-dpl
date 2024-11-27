@@ -14,6 +14,7 @@ jobs:
     
   Job2:
     runs-on: ubuntu-latest
+    steps:
       - run: |
         echo "${{ needs.one.outputs.HELLO }}"
 
