@@ -46,8 +46,7 @@ jobs:
         (Get-Content -path ./index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./index.html 
     - name: Zip Deployable Package
       shell: pwsh
-      working-directory: ./dist/new-proj
-      run: Compress-Archive -Path ./ -DestinationPath ./deployable-package.zip
+      run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
     - uses: actions/upload-artifact@v4
       with:
         name: deployable-package
