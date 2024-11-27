@@ -9,14 +9,14 @@ jobs:
   Job1:
     runs-on: ubuntu-latest
     steps:
-      run: |
-        echo "HELLO=WORLD" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v4
+    - run: echo "HELLO=WORLD" >> "$GITHUB_OUTPUT"
     
   Job2:
     runs-on: ubuntu-latest
     steps:
-      run: |
-        echo "${{ needs.one.outputs.HELLO }}"
+    - uses: actions/checkout@v4
+    - run: echo "${{ needs.one.outputs.HELLO }}"
 
 
   # EnvironmentInfo:
