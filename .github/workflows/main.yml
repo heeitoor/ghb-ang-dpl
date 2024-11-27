@@ -66,7 +66,7 @@ jobs:
       - run: npm ci
       # - run: npm run test
   Deploy:
-    needs: [Build]
+    needs: [Build, Tests]
     runs-on: ubuntu-latest
     # environment: Production
     steps:
@@ -87,7 +87,8 @@ jobs:
         AWS_DEFAULT_OUTPUT: json
       run: |
         ls
-        aws s3 cp ./ s3://termsheet-s3-poc --recursive
+        echo ${{ github.ref_name }}
+        aws s3 cp ./ s3://termsheet-s3-poc --recursive --metadata '{ "gh-tag-name": "${{ github.ref_name }}" }'
   HealthCheck:
     needs: [Deploy]    
     runs-on: ubuntu-latest
