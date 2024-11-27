@@ -9,13 +9,13 @@ jobs:
   Job1:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      run: |
         echo "HELLO=WORLD" >> "$GITHUB_OUTPUT"
     
   Job2:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      run: |
         echo "${{ needs.one.outputs.HELLO }}"
 
 
