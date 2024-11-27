@@ -42,8 +42,9 @@ jobs:
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
         $dist_hash=ls ./main*.js | awk -F'[.]' '{print $2}'
+        $branch_name=${{ github.ref_name }}
         "{ `"hash`": `"$dist_hash`", `"commit`": `"$short_sha`", `"commitLong`": `"${{ github.sha }}`", `"branch`": `"${{ github.ref_name }}`"}" | Out-File ./version.json
-        (Get-Content -path ./index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./index.html 
+        (Get-Content -path ./index.html -Raw) -replace "</html>","<script>window.ts_hash_version='$dist_hash';window.ts_commit='$short_sha';window.ts_branch_name='$branch_name';</script>$([Environment]::NewLine)</html>" | Set-Content -Path ./index.html 
     - name: Zip Deployable Package
       shell: pwsh
       run: Compress-Archive -Path ./dist/new-proj -DestinationPath ./deployable-package.zip
@@ -68,7 +69,7 @@ jobs:
   Deploy:
     needs: [Build, Tests]
     runs-on: ubuntu-latest
-    # environment: Production
+    environment: Production
     steps:
     - name: Download All Artifacts
       uses: actions/download-artifact@v4
@@ -89,7 +90,7 @@ jobs:
         ls
         echo ${{ github.ref_name }}
         aws s3 cp ./ s3://termsheet-s3-poc --recursive --metadata '{ "gh-tag-name": "${{ github.ref_name }}" }'
-  HealthCheck:
+  Healthcheck:
     needs: [Deploy]    
     runs-on: ubuntu-latest
     steps:
