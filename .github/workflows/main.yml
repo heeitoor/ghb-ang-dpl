@@ -39,7 +39,7 @@ jobs:
       run: |
         $short_sha=$(git rev-parse --short ${{ github.sha }})
         $dist_hash=ls ./dist/new-proj/main*.js | awk -F'[.]' '{print $2}'
-        "{ \"hash\": \"$dist_hash\", \"commit\": \"$short_sha\", \"commitLong\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" | Out-File ./dist/new-proj/version.json
+        "{ `"hash`": `"$dist_hash`", `"commit`": `"$short_sha`", `"commitLong`": `"${{ github.sha }}`", `"branch`": `"${{ github.ref_name }}`"}" | Out-File ./dist/new-proj/version.json
         cat ./dist/new-proj/version.json
         ls ./dist/new-proj
         cat ./dist/new-proj/index.html
