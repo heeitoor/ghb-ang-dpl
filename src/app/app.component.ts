@@ -10,9 +10,7 @@ export class AppComponent {
   title = 'new-proj';
   ts_hash_version = '';
   ts_commit = '';
-  /**
-   *
-   */
+
   constructor(@Inject(DOCUMENT) private document: Document) {
     this.ts_hash_version = (document.defaultView as any)[
       'ts_hash_version'
@@ -22,5 +20,9 @@ export class AppComponent {
 
   throwError(): void {
     throw new Error('This is a test error');
+  }
+
+  throwAnotherError(): void {
+    throw new Error('This is another test error');
   }
 }
